@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andrea Teacher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            /* Un fondo suave */
+        }
+
+        #chatArea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chatArea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #chatArea::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        #chatArea::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .message-bubble {
+            transition: all 0.3s ease;
+        }
+
+        .message-bubble:hover {
+            transform: translateY(-2px);
+        }
+
+        .translation-box {
+            border-left: 3px solid #3b82f6;
+        }
+
+        .new-message-animation {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .recording-active {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-blue-100 via-indigo-50 to-pink-100">
+
+    <div class="w-full max-w-2xl bg-white shadow-2xl rounded-xl p-6 md:p-8">
+        <header class="mb-6 text-center">
+            <h1 class="text-4xl font-bold text-indigo-600">Andrea´s Teacher</h1>
+
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="p-4 bg-blue-50 rounded-lg shadow">
+                <label for="andreaLang" class="block text-sm font-medium text-gray-700 mb-1">Yo hablaré en:</label>
+                <select id="andreaLang" name="andreaLang"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="es-ES">Español (España)</option>
+                    <option value="en-US">Inglés (USA)</option>
+                    <option value="fr-FR">Francés (Francia)</option>
+                    <option value="de-DE">Alemán (Alemania)</option>
+                    <option value="it-IT">Italiano (Italia)</option>
+                    <option value="pt-PT">Portugués (Portugal)</option>
+                    <option value="zh-CN">Chino (China)</option>
+                    <option value="ru-RU">Ruso (Rusia)</option>
+                    <option value="en-GB">Inglés (UK)</option>
+
+                </select>
+            </div>
+            <div class="p-4 bg-green-50 rounded-lg shadow">
+                <label for="aiLang" class="block text-sm font-medium text-gray-700 mb-1">Andrea Teacher hablará
+                    en:</label>
+                <select id="aiLang" name="aiLang"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="en">Inglés</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Francés</option>
+                    <option value="de">Alemán</option>
+                    <option value="it">Italiano</option>
+                    <option value="pt">Portugués</option>
+                    <option value="zh">Chino</option>
+                    <option value="ru">Ruso</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="chatArea"
+            class="h-80 md:h-96 overflow-y-auto mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 shadow-inner space-y-4">
+            <div class="flex justify-start new-message-animation">
+                <div class="message-bubble bg-indigo-500 text-white p-3 rounded-lg max-w-xs md:max-w-md shadow">
+                    <p class="font-semibold">Andrea Teacher</p>
+                    <p>¡Hola Andrea!. ¡Empecemos a
+                        aprender! tu tio me ha dicho queres una crack!😊</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <input type="text" id="messageInput" placeholder="Escribe o graba tu mensaje..."
+                class="flex-grow px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm">
+            <button id="voiceRecordBtn"
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 font-semibold shadow-md transition duration-150 ease-in-out rounded-md"
+                aria-label="Grabar mensaje de voz">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button id="sendMessageBtn"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-r-lg font-semibold shadow-md transition duration-150 ease-in-out">
+                Enviar
+            </button>
+        </div>
+        <p id="voiceStatus" class="text-xs text-gray-500 mt-1 h-4"></p>
+    </div>
+
+    <script>
+        // --------------------------------------------------------------------
+        // CONFIGURACIÓN IMPORTANTE: Coloca tu API Key de Gemini aquí
+        // --------------------------------------------------------------------
+        const GEMINI_API_KEY = "AIzaSyC6LaXhR1JvHyobe1U0UQyDoQcSd3w7la8"; // <--- ¡¡REEMPLAZA ESTO CON TU API KEY REAL!!
+        // --------------------------------------------------------------------
+
+        // Elementos del DOM
+        const andreaLangSelect = document.getElementById('andreaLang');
+        const aiLangSelect = document.getElementById('aiLang');
+        const chatArea = document.getElementById('chatArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const voiceRecordBtn = document.getElementById('voiceRecordBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+
+        let conversationHistory = [];
+
+        sendMessageBtn.addEventListener('click', handleSendMessage);
+        messageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                handleSendMessage();
+            }
+        });
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                voiceStatus.textContent = '🎤 Grabando... Habla ahora.';
+                voiceRecordBtn.classList.add('recording-active');
+                voiceRecordBtn.disabled = true;
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                messageInput.value = transcript;
+                handleSendMessage();
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Error en reconocimiento de voz:', event.error);
+                let errorMessage = 'Error en reconocimiento: ';
+                if (event.error === 'no-speech') {
+                    errorMessage += 'No se detectó voz. Intenta de nuevo.';
+                } else if (event.error === 'audio-capture') {
+                    errorMessage += 'Problema con el micrófono. Verifica que esté conectado y funcionando.';
+                } else if (event.error === 'not-allowed') {
+                    errorMessage += 'Permiso para micrófono denegado. Revisa los permisos del navegador para este sitio.';
+                } else if (event.error === 'aborted') {
+                    errorMessage += 'Grabación abortada.';
+                } else {
+                    errorMessage += event.error;
+                }
+                voiceStatus.textContent = errorMessage;
+                setTimeout(() => voiceStatus.textContent = '', 4000);
+            };
+
+            recognition.onend = () => {
+                if (voiceStatus.textContent === '🎤 Grabando... Habla ahora.') {
+                    voiceStatus.textContent = 'Grabación finalizada.';
+                    setTimeout(() => voiceStatus.textContent = '', 2000);
+                }
+                voiceRecordBtn.classList.remove('recording-active');
+                voiceRecordBtn.disabled = false;
+            };
+
+            voiceRecordBtn.addEventListener('click', () => {
+                if (!GEMINI_API_KEY || GEMINI_API_KEY === "TU_API_KEY_AQUI") {
+                    displayMessage('system', 'Por favor, configura tu API Key de Gemini en el código para continuar.', 'system', null, 'error');
+                    return;
+                }
+                try {
+                    voiceStatus.textContent = 'Iniciando grabación... (puede requerir permiso del micrófono)';
+                    recognition.lang = andreaLangSelect.value;
+                    recognition.start();
+                } catch (e) {
+                    console.error("Error al iniciar reconocimiento:", e);
+                    voiceStatus.textContent = "Error crítico al iniciar grabación. Revisa la consola.";
+                    voiceRecordBtn.disabled = false;
+                }
+            });
+
+            voiceStatus.textContent = 'Haz clic en el micrófono para grabar. El navegador podría pedirte permiso.';
+            setTimeout(() => {
+                if (voiceStatus.textContent === 'Haz clic en el micrófono para grabar. El navegador podría pedirte permiso.') {
+                    voiceStatus.textContent = '';
+                }
+            }, 5000);
+
+        } else {
+            voiceRecordBtn.disabled = true;
+            voiceStatus.textContent = 'Reconocimiento de voz no soportado en este navegador.';
+            displayMessage('system', 'Tu navegador no soporta reconocimiento de voz. Intenta con Chrome o Edge.', 'system', null, 'error');
+        }
+
+        function handleSendMessage() {
+            const userMessageText = messageInput.value.trim();
+            const andreaLang = andreaLangSelect.value.split('-')[0];
+            const aiLang = aiLangSelect.value;
+
+            if (!userMessageText) return;
+
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "TU_API_KEY_AQUI") {
+                displayMessage('system', 'API Key no configurada. Por favor, edita el archivo HTML e introduce tu API Key en la variable GEMINI_API_KEY.', 'system', null, 'error');
+                console.error("API Key no configurada en el código.");
+                return;
+            }
+
+            displayMessage('Andrea', userMessageText, andreaLang);
+            const currentConversationForAPI = [...conversationHistory, { role: 'user', parts: [{ text: userMessageText }] }];
+            conversationHistory.push({ role: 'user', parts: [{ text: userMessageText }] });
+
+
+            messageInput.value = '';
+
+            const typingIndicator = displayMessage('Andrea Teacher', 'Escribiendo...', aiLang, null, 'typing');
+
+            callGeminiApi(currentConversationForAPI, andreaLang, aiLang, GEMINI_API_KEY)
+                .then(response => {
+                    if (typingIndicator && typingIndicator.parentNode === chatArea) {
+                        chatArea.removeChild(typingIndicator);
+                    }
+                    displayMessage('Andrea Teacher', response.aiMessage, aiLang, response.translationToAndreaLang, null);
+                    if (response.aiMessage && !response.aiMessage.startsWith("Error")) {
+                        conversationHistory.push({ role: 'model', parts: [{ text: response.aiMessage }] });
+                    }
+                })
+                .catch(error => {
+                    if (typingIndicator && typingIndicator.parentNode === chatArea) {
+                        chatArea.removeChild(typingIndicator);
+                    }
+                    console.error("Error procesando la respuesta de la API de Gemini:", error);
+                    displayMessage('system', `Error procesando respuesta: ${error.message}. Revisa la consola.`, 'system', null, 'error');
+                });
+        }
+
+        function displayMessage(sender, text, lang, translation = null, type = null) {
+            const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('new-message-animation', 'mb-3', 'message-bubble');
+            messageDiv.id = messageId;
+
+            let bgColor = 'bg-gray-200';
+            let textColor = 'text-gray-800';
+            let senderName = sender;
+
+            if (sender === 'Andrea') {
+                messageDiv.classList.add('flex', 'justify-end');
+                bgColor = 'bg-blue-500';
+                textColor = 'text-white';
+            } else if (sender === 'Andrea Teacher') {
+                messageDiv.classList.add('flex', 'justify-start');
+                bgColor = 'bg-indigo-500';
+                textColor = 'text-white';
+            } else {
+                messageDiv.classList.add('text-center', 'my-2');
+                senderName = '';
+                bgColor = type === 'error' ? 'bg-red-100' : (type === 'typing' ? 'bg-gray-100' : 'bg-yellow-100');
+                textColor = type === 'error' ? 'text-red-700' : (type === 'typing' ? 'text-gray-500' : 'text-yellow-700');
+            }
+
+            let escapedText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            let contentHTML = `
+                <div class="${bgColor} ${textColor} p-3 rounded-lg max-w-xs md:max-w-md shadow ${type === 'typing' ? 'italic' : ''}">
+                    ${senderName ? `<p class="font-semibold text-sm mb-1">${senderName} <span class="text-xs opacity-75">(${lang.toUpperCase()})</span></p>` : ''}
+                    <p>${escapedText.replace(/\n/g, '<br>')}</p> `;
+
+            if (translation) {
+                let escapedTranslation = translation.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                contentHTML += `
+                    <div class="mt-2 pt-2 border-t border-gray-400 opacity-80 translation-box p-2 rounded bg-white/10">
+                        <p class="text-xs font-medium">Traducción (${andreaLangSelect.value.split('-')[0].toUpperCase()}):</p>
+                        <p class="text-sm italic">${escapedTranslation.replace(/\n/g, '<br>')}</p>
+                    </div>
+                `;
+            }
+            contentHTML += `</div>`;
+
+            if (sender === 'Andrea' || sender === 'Andrea Teacher') {
+                messageDiv.innerHTML = contentHTML;
+            } else {
+                messageDiv.innerHTML = `<div class="${bgColor} ${textColor} p-2 rounded-md text-sm shadow">${escapedText}</div>`;
+            }
+
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            return messageDiv;
+        }
+
+        async function callGeminiApi(currentFullConversation, currentAndreaLang, currentAiLang, apiKey) {
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+
+            const latestUserMessage = currentFullConversation[currentFullConversation.length - 1].parts[0].text;
+
+            const systemInstruction = `Eres "Andrea Teacher", un profesor de idiomas amigable, paciente, experto y divertido.
+El usuario, Andrea, está aprendiendo ${currentAiLang}. Andrea te escribirá en ${currentAndreaLang}.
+Tú debes responder SIEMPRE en ${currentAiLang}.
+
+Instrucciones para tus respuestas:
+1.  **RESPUESTAS CORTAS Y CONCISAS:** Mantén tus respuestas principales lo más breves posible para facilitar el aprendizaje. Evita ser demasiado verboso. Una o dos frases suelen ser suficientes.
+2.  **CONVERSACIÓN NATURAL:** Responde al mensaje de Andrea de forma natural y conversacional en ${currentAiLang}. Tu respuesta debe ser útil y relevante para el aprendizaje de idiomas.
+3.  **TRADUCCIÓN (SI ES NECESARIO):** Si Andrea escribe en ${currentAndreaLang} (su idioma nativo o un idioma diferente al que está aprendiendo contigo):
+    a.  Responde a su pregunta o comentario en ${currentAiLang} (respuesta corta).
+    b.  DEBAJO de tu respuesta principal, proporciona una traducción de TU respuesta a ${currentAndreaLang}. Llámala "Traducción (${currentAndreaLang.toUpperCase()}):".
+4.  **CHISTES OCASIONALES:** De vez en cuando (no en cada mensaje), si encaja de forma natural en la conversación y después de haber respondido al mensaje de Andrea, puedes contar un chiste MUY CORTO y sencillo en ${currentAiLang}. El chiste debe ser apropiado y fácil de entender para un estudiante de idiomas. No fuerces los chistes.
+5.  **CONTEXTO:** El historial de conversación se proveerá para darte contexto. NO repitas el mensaje actual de Andrea en tu respuesta.
+
+Historial de conversación (los mensajes más recientes primero, excluyendo el mensaje actual de Andrea que está abajo):
+${currentFullConversation.slice(0, -1).slice(-6).reverse().map(msg => `${msg.role === 'user' ? 'Andrea' : 'Andrea Teacher'}: ${msg.parts[0].text}`).join('\n')}
+
+Mensaje actual de Andrea (${currentAndreaLang}):
+"${latestUserMessage}"
+
+Responde ÚNICAMENTE con un objeto JSON válido con la siguiente estructura. NO incluyas NINGÚN texto o marcador como "\`\`\`json" o "\`\`\`" antes o después del objeto JSON:
+{
+  "aiMessage": "Tu respuesta principal en ${currentAiLang} (¡MUY CORTA!). Si decides contar un chiste, inclúyelo aquí después de tu respuesta principal, separado por un salto de línea.",
+  "translationToAndreaLang": "Traducción de tu respuesta principal (SOLO la respuesta, no el chiste) a ${currentAndreaLang} (SOLO si Andrea escribió en ${currentAndreaLang} o si es muy útil, sino null)."
+}
+Asegúrate de que el JSON sea válido. Escapa las comillas dobles dentro de las cadenas con \\".
+`;
+            const requestBody = {
+                contents: [
+                    ...currentFullConversation.slice(-10),
+                    { role: 'user', parts: [{ text: systemInstruction }] }
+                ],
+                generationConfig: {
+                    // temperature: 0.7, // Podrías experimentar con esto para la creatividad de los chistes.
+                    // maxOutputTokens: 256, // Reducir si las respuestas son muy largas
+                }
+            };
+
+            console.log('Enviando a Gemini:', JSON.stringify(requestBody, null, 2));
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+
+                const responseText = await response.text();
+                console.log('Respuesta cruda de Gemini (texto):', responseText);
+
+                if (!response.ok) {
+                    let errorDetail = `Error de la API: ${response.status} ${response.statusText}.`;
+                    try {
+                        const errorBody = JSON.parse(responseText);
+                        console.error("Cuerpo del error de la API:", errorBody);
+                        errorDetail += ` ${errorBody?.error?.message || responseText}`;
+                        if (response.status === 400 && (errorBody?.error?.message?.includes("API key not valid") || errorBody?.error?.message?.includes("API_KEY_INVALID") || errorBody?.error?.message?.includes("permission to access"))) {
+                            errorDetail = "API key no válida, malformada, o no tiene permiso para este modelo. Verifica tu API Key y sus permisos en Google AI Studio.";
+                        } else if (response.status === 429) {
+                            errorDetail = "Has excedido tu cuota de la API (Error 429). Inténtalo más tarde.";
+                        } else if (response.status === 404) {
+                            errorDetail = `El modelo especificado (${API_URL.split('/models/')[1].split(':')[0]}) no se encontró o no es compatible. (Error 404)`;
+                        }
+                    } catch (e) {
+                        errorDetail += ` Respuesta no JSON: ${responseText}`;
+                    }
+                    throw new Error(errorDetail);
+                }
+
+                const responseData = JSON.parse(responseText);
+                console.log('Respuesta de Gemini parseada (JSON global):', responseData);
+
+                if (responseData.candidates && responseData.candidates.length > 0 &&
+                    responseData.candidates[0].content && responseData.candidates[0].content.parts &&
+                    responseData.candidates[0].content.parts.length > 0) {
+
+                    let rawJsonStringFromModel = responseData.candidates[0].content.parts[0].text;
+                    console.log('String JSON extraído del modelo (antes de limpiar):', rawJsonStringFromModel);
+
+                    let cleanedJsonString = rawJsonStringFromModel;
+                    const firstBrace = cleanedJsonString.indexOf('{');
+                    const lastBrace = cleanedJsonString.lastIndexOf('}');
+
+                    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                        cleanedJsonString = cleanedJsonString.substring(firstBrace, lastBrace + 1);
+                    } else {
+                        console.error("No se encontró una estructura JSON válida (faltan llaves {}) en la respuesta del modelo:", rawJsonStringFromModel);
+                        return {
+                            aiMessage: `Error: La IA no devolvió un formato JSON esperado. Respuesta recibida: ${rawJsonStringFromModel}`,
+                            translationToAndreaLang: null
+                        };
+                    }
+
+                    console.log('String JSON extraído del modelo (después de limpiar):', cleanedJsonString);
+
+                    try {
+                        const parsedGeminiResponse = JSON.parse(cleanedJsonString);
+                        return {
+                            aiMessage: parsedGeminiResponse.aiMessage || "No se pudo obtener respuesta con el formato esperado.",
+                            translationToAndreaLang: parsedGeminiResponse.translationToAndreaLang || null
+                        };
+                    } catch (parseError) {
+                        console.error("Error al parsear el JSON interno de Gemini:", parseError);
+                        console.error("String JSON que falló el parseo:", cleanedJsonString);
+                        return {
+                            aiMessage: `Error al procesar la respuesta de la IA. Formato inesperado. (Revisa la consola para más detalles).`,
+                            translationToAndreaLang: null
+                        };
+                    }
+                } else if (responseData.promptFeedback && responseData.promptFeedback.blockReason) {
+                    console.error("Contenido bloqueado por la API:", responseData.promptFeedback);
+                    const blockReason = responseData.promptFeedback.blockReason;
+                    const safetyRatings = responseData.promptFeedback.safetyRatings.map(r => `${r.category}: ${r.probability}`).join(', ');
+                    return {
+                        aiMessage: `Tu mensaje o la respuesta fue bloqueada por políticas de seguridad (Razón: ${blockReason}). Intenta reformular tu mensaje.`,
+                        translationToAndreaLang: null
+                    };
+                }
+                else {
+                    console.error("Respuesta inesperada de la API de Gemini (sin candidatos válidos):", responseData);
+                    throw new Error('Formato de respuesta inesperado de la API de Gemini (sin candidatos).');
+                }
+
+            } catch (error) {
+                console.error("Error en callGeminiApi:", error);
+                return {
+                    aiMessage: `Error al contactar la IA: ${error.message}`,
+                    translationToAndreaLang: null
+                };
+            }
+        }
+    </script>
+</body>
+<footer>
+    <br>
+    <h2 style="color:gray">
+        Desarrollado por Luis Vázquez
+    </h2>
+
+</footer>
+
+</html>
